@@ -10,6 +10,7 @@ type UserServiceInterface interface {
 	Login(req models.UserLoginRequest) (models.UserLoginResponse, error)
 	RefreshToken(accessToken string) (models.UserLoginResponse, error)
 	DeleteUser(req models.RequestID) error
+	FindListUsers(req models.FindListUserRequest) ([]models.FindListUserResponse, error)
 }
 
 type UserPermissionServiceInterface interface {

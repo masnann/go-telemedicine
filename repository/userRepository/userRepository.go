@@ -40,7 +40,7 @@ func (r UserRepository) Register(req models.UserModels) (int64, error) {
 func (r UserRepository) FindUserByID(id int64) (models.UserModels, error) {
 	var user models.UserModels
 
-	query := `SELECT * FROM users WHERE id = ? and status = ''`
+	query := `SELECT * FROM users WHERE id = ? and status = 'active'`
 
 	query = helpers.ReplaceSQL(query, "?")
 	row := r.repo.DB.QueryRow(query, id)
@@ -103,4 +103,50 @@ func (r UserRepository) DeleteUser(userID int64) error {
 		return errors.New("error query")
 	}
 	return nil
+}
+
+func (r UserRepository) FindListUser(req models.FindListUserRequest) ([]models.FindListUserResponse, error) {
+	var user []models.FindListUserResponse
+	var params []interface{}
+
+	query := `
+		SELECT
+		    id, 
+            username, 
+            email, 
+            status, 
+            created_at
+		FROM 
+			users
+		WHERE true
+		
+	`
+	if req.Status != constants.EMPTY_STRING {
+		query += ` AND status = ?`
+		params = append(params, req.Status)
+	}
+
+	query += ` ORDER BY created_at DESC`
+	if req.Pagination.Page != constants.EMPTY_INT && req.Pagination.PageSize != constants.EMPTY_INT {
+		offset := (req.Pagination.Page - 1) * req.Pagination.PageSize
+		query += ` LIMIT ? OFFSET ?`
+		params = append(params, req.Pagination.PageSize, offset)
+	}
+	query = helpers.ReplaceSQL(query, "?")
+	rows, err := r.repo.DB.Query(query, params...)
+	if err != nil {
+		log.Println("Error querying find list user: ", err)
+		return user, errors.New("error query")
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var row models.FindListUserResponse
+		err := rows.Scan(&row.ID, &row.Username, &row.Email, &row.Status, &row.CreatedAt)
+		if err != nil {
+			log.Println("Error scanning row: ", err)
+			return user, errors.New("error scanning row")
+		}
+		user = append(user, row)
+	}
+	return user, nil
 }

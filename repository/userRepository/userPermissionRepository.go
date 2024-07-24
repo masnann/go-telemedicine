@@ -150,3 +150,22 @@ func (r UserPermissionRepository) FindUserPermissions(userID int64, permissionGr
 	}
 	return permission, nil
 }
+
+func (r UserPermissionRepository) CreateUserRolePermission(req models.RolePermissionModels) (int64, error) {
+	var ID int64
+
+	query := `
+		INSERT INTO role_permissions
+			(role_id, permission_id, status)
+		VALUES (?,?,?)
+		RETURNING id`
+	
+	query = helpers.ReplaceSQL(query, "?")
+	err := r.repo.DB.QueryRow(query, req.RoleID, req.PermissionID, req.Status).Scan(&ID)
+	if err!= nil {
+        log.Println("Error querying create permission: ", err)
+        return ID, errors.New("error query")
+    }
+
+    return ID, nil
+}

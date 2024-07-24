@@ -135,3 +135,39 @@ func (h UserHandler) FindListUsers(ctx echo.Context) error {
 	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, list)
 	return ctx.JSON(http.StatusOK, result)
 }
+
+func (h UserHandler) CreateUser(ctx echo.Context) error {
+	var result models.Response
+	req := new(models.UserCreateRequest)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	userID, err := h.handler.UserService.CreateUser(*req)
+	if err != nil {
+		log.Printf("Error CreateUser: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, userID)
+	return ctx.JSON(http.StatusCreated, result)
+}
+
+func (h UserHandler) CreateUserRolePermission(ctx echo.Context) error {
+	var result models.Response
+	req := new(models.UserRolePermissionCreateRequest)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	permissionID, err := h.handler.UserPermissionService.CreateUserRolePermission(*req)
+	if err != nil {
+		log.Printf("Error CreateUserRolePermission: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, permissionID)
+	return ctx.JSON(http.StatusCreated, result)
+}

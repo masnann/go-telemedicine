@@ -29,3 +29,8 @@ type AssignRoleToUserRequest struct {
 	UserID int64 `json:"userID"`
 	RoleID int64 `json:"roleID"`
 }
+
+type UserRolePermissionCreateRequest struct {
+	RoleID       int64 `json:"roleID"`
+	PermissionID int64 `json:"permissionID"`
+}

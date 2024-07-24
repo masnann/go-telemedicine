@@ -35,3 +35,17 @@ func (s UserPermissionService) FindUserPermissions(userID int64, permissionGroup
 	return result, nil
 
 }
+
+func (s UserPermissionService) CreateUserRolePermission(req models.UserRolePermissionCreateRequest) (int64, error) {
+	newData := models.RolePermissionModels{
+		RoleID:       req.RoleID,
+		PermissionID: req.PermissionID,
+		Status:       true,
+	}
+	result, err := s.service.UserPermissionRepo.CreateUserRolePermission(newData)
+	if err != nil {
+		log.Println("Error creating user role permission: ", err)
+		return 0, err
+	}
+	return result, nil
+}

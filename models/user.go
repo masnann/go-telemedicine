@@ -5,6 +5,7 @@ type UserModels struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"-"`
+	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
@@ -14,6 +15,7 @@ type UserRegisterRequest struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
@@ -52,6 +54,18 @@ type FindListUserResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
 	Email     string `json:"email"`
+	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
+}
+
+type UserCreateRequest struct {
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Type      string `json:"type"`
+	Status    string `json:"status"`
+	RoleID    int64  `json:"roleID"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
 }

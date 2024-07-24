@@ -23,4 +23,5 @@ const (
 	EMPTY_VALUE = ""
 
 	USER = "user"
+	USER_STATUS_DELETE = "deleted"
 )

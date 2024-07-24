@@ -160,3 +160,18 @@ func (s UserService) RefreshToken(accessToken string) (models.UserLoginResponse,
 
 	return result, nil
 }
+
+func (s UserService) DeleteUser(req models.RequestID) error {
+	user, err := s.service.UserRepo.FindUserByID(req.ID)
+	if err != nil {
+		log.Println("Error finding user by ID: ", err)
+		return errors.New("user not found")
+	}
+
+	err = s.service.UserRepo.DeleteUser(user.ID)
+	if err != nil {
+		log.Println("Error deleting user: ", err)
+		return errors.New("failed to delete user")
+	}
+	return nil
+}

@@ -1,0 +1,26 @@
+package constants
+
+const (
+	SUCCESS_CODE = "101"
+	PENDING_CODE = "102"
+	FAILED_CODE  = "103"
+
+	DATA_NOT_FOUND_CODE = "201"
+	VALIDATE_ERROR_CODE = "202"
+	UNAUTHORIZED_CODE   = "203"
+	FORBIDDEN_CODE      = "204"
+
+	SYSTEM_ERROR_CODE    = "501"
+	UNDEFINED_ERROR_CODE = "502"
+
+	EMPTY_CODE = ""
+
+	EMPTY_STRING = ""
+	EMPTY_INT    = 0
+
+	TRUE_VALUE  = true
+	FALSE_VALUE = false
+	EMPTY_VALUE = ""
+
+	USER = "user"
+)

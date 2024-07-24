@@ -6,7 +6,8 @@ type UserRepositoryInterface interface {
 	Register(req models.UserModels) (int64, error)
 	FindUserByID(id int64) (models.UserModels, error)
 	Login(email string) (models.UserModels, error)
-	DeleteUser(userID int64) error 
+	DeleteUser(userID int64) error
+	FindListUser(req models.FindListUserRequest) ([]models.FindListUserResponse, error)
 }
 
 type UserPermissionRepositoryInterface interface {

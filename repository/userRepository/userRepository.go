@@ -3,6 +3,7 @@ package userrepository
 import (
 	"database/sql"
 	"errors"
+	"go-telemedicine/constants"
 	"go-telemedicine/helpers"
 	"go-telemedicine/models"
 	"go-telemedicine/repository"
@@ -38,7 +39,7 @@ func (r UserRepository) Register(req models.UserModels) (int64, error) {
 
 func (r UserRepository) FindUserByID(id int64) (models.UserModels, error) {
 	var user models.UserModels
-	
+
 	query := `SELECT * FROM users WHERE id = ? and status = ''`
 
 	query = helpers.ReplaceSQL(query, "?")
@@ -84,4 +85,22 @@ func (r UserRepository) Login(email string) (models.UserModels, error) {
 	}
 
 	return user, nil
+}
+
+func (r UserRepository) DeleteUser(userID int64) error {
+	query := `
+		UPDATE 
+			users 
+		SET 
+			status = ? 
+		WHERE 
+			id = ?
+	`
+	query = helpers.ReplaceSQL(query, "?")
+	_, err := r.repo.DB.Exec(query, constants.USER_STATUS_DELETE, userID)
+	if err != nil {
+		log.Println("Error querying delete user: ", err)
+		return errors.New("error query")
+	}
+	return nil
 }

@@ -101,8 +101,19 @@ func (h UserHandler) RefreshToken(ctx echo.Context) error {
 func (h UserHandler) DeleteUser(ctx echo.Context) error {
 	var result models.Response
 
-	response := "Success"
+	req := new(models.RequestID)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	err := h.handler.UserService.DeleteUser(*req)
+	if err != nil {
+		log.Printf("Error DeleteUser: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
 
-	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, response)
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, "Successfully deleted")
 	return ctx.JSON(http.StatusOK, result)
 }

@@ -30,7 +30,7 @@ func (s UserService) Register(req models.UserRegisterRequest) (int64, error) {
 		Username:  req.Username,
 		Email:     req.Email,
 		Password:  hash,
-		Status:    "",
+		Status:    "active",
 		CreatedAt: helpers.TimeStampNow(),
 		UpdatedAt: "",
 	}
@@ -44,7 +44,7 @@ func (s UserService) Register(req models.UserRegisterRequest) (int64, error) {
 	// Assign Role
 	newRole := models.AssignRoleToUserRequest{
 		UserID: result,
-		RoleID: 1,
+		RoleID: 3,
 	}
 
 	err = s.service.UserPermissionRepo.AssignRoleToUserRequest(newRole)
@@ -174,4 +174,13 @@ func (s UserService) DeleteUser(req models.RequestID) error {
 		return errors.New("failed to delete user")
 	}
 	return nil
+}
+
+func (s UserService) FindListUsers(req models.FindListUserRequest) ([]models.FindListUserResponse, error) {
+	result, err := s.service.UserRepo.FindListUser(req)
+	if err != nil {
+		log.Println("Error finding list users: ", err)
+		return nil, errors.New("failed to find list users")
+	}
+	return result, nil
 }

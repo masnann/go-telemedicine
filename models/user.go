@@ -42,3 +42,16 @@ type FindUserRoleResponse struct {
 	RoleID   int    `json:"roleID"`
 	RoleName string `json:"roleName"`
 }
+
+type FindListUserRequest struct {
+	Status     string     `json:"status"`
+	Pagination Pagination `json:"pagination"`
+}
+
+type FindListUserResponse struct {
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Status    string `json:"status"`
+	CreatedAt string `json:"createdAt"`
+}

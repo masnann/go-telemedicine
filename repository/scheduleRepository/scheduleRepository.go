@@ -1,6 +1,7 @@
 package schedulerepository
 
 import (
+	"database/sql"
 	"errors"
 	"go-telemedicine/constants"
 	"go-telemedicine/helpers"
@@ -28,7 +29,7 @@ func (r ScheduleRepository) CreateSchedule(req models.ScheduleModels) (int64, er
 			(?,?,?,?,?,?,?)
         RETURNING id`
 
-    query = helpers.ReplaceSQL(query, "?")
+	query = helpers.ReplaceSQL(query, "?")
 	err := r.repo.DB.QueryRow(query, req.DoctorID, req.Date, req.StartTime, req.EndTime, req.IsAvailable, req.CreatedAt, req.UpdatedAt).Scan(&ID)
 	if err != nil {
 		log.Println("Error querying create schedule: ", err)
@@ -81,4 +82,34 @@ func (r ScheduleRepository) FindListAvailableSchedule(req models.ScheduleFindLis
 	}
 	return schedules, nil
 
+}
+
+func (s ScheduleRepository) FindScheduleByID(id int64) (models.ScheduleModels, error) {
+	var schedules models.ScheduleModels
+
+	query := `
+		SELECT 
+			id, 
+			doctor_id, 
+			date, 
+			start_time, 
+			end_time, 
+			is_available, 
+			created_at, updated_at
+		FROM schedules WHERE id = ? AND deleted_at is NULL `
+
+	query = helpers.ReplaceSQL(query, "?")
+	row := s.repo.DB.QueryRow(query, id)
+	err := row.Scan(
+		&schedules.ID, &schedules.DoctorID, &schedules.Date,
+		&schedules.StartTime, &schedules.EndTime, &schedules.IsAvailable,
+		&schedules.CreatedAt, &schedules.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return schedules, errors.New("schedule not found")
+		}
+		log.Println("Error scanning row: ", err)
+		return schedules, errors.New("error scanning row")
+	}
+	return schedules, nil
 }

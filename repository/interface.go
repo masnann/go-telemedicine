@@ -21,4 +21,9 @@ type UserPermissionRepositoryInterface interface {
 type ScheduleRepositoryInterface interface {
 	CreateSchedule(req models.ScheduleModels) (int64, error)
 	FindListAvailableSchedule(req models.ScheduleFindListAvailableRequest) ([]models.ScheduleModels, error)
+	FindScheduleByID(id int64) (models.ScheduleModels, error)
+}
+
+type ConsultationRepositoryInterface interface {
+    CreateConsultation(req models.ConsultationModels) (int64, error)
 }

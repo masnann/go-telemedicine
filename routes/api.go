@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-telemedicine/handler"
+	consultationhandler "go-telemedicine/handler/consultationHandler"
 	schedulehandler "go-telemedicine/handler/scheduleHandler"
 	userhandler "go-telemedicine/handler/userHandler"
 	"go-telemedicine/helpers/middleware"
@@ -34,4 +35,9 @@ func ApiRoutes(e *echo.Echo, handler handler.Handler) {
 	scheduleGroup := private.Group("/schedule")
 	scheduleGroup.POST("/create", middleware.PermissionMiddleware(handler, "SCHEDULE", "CREATE")(scheduleHandler.CreateSchedule))
 	scheduleGroup.POST("/list", middleware.PermissionMiddleware(handler, "SCHEDULE", "READ")(scheduleHandler.FindListAvailableSchedule))
+
+	// Consultation
+	consultationHandler := consultationhandler.NewConsultationHandler(handler)
+	consultationGroup := private.Group("/consultation")
+	consultationGroup.POST("/create", middleware.PermissionMiddleware(handler, "CONSULTATION", "CREATE")(consultationHandler.CreateConsultation))
 }

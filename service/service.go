@@ -10,6 +10,7 @@ type Service struct {
 	UserRepo           repository.UserRepositoryInterface
 	UserPermissionRepo repository.UserPermissionRepositoryInterface
 	ScheduleRepo       repository.ScheduleRepositoryInterface
+	ConsultationRepo   repository.ConsultationRepositoryInterface
 }
 
 func NewService(
@@ -17,11 +18,13 @@ func NewService(
 	userRepo repository.UserRepositoryInterface,
 	userPermissionRepo repository.UserPermissionRepositoryInterface,
 	scheduleRepo repository.ScheduleRepositoryInterface,
+	consultationRepo repository.ConsultationRepositoryInterface,
 ) Service {
 	return Service{
 		Generator:          generator,
 		UserRepo:           userRepo,
 		UserPermissionRepo: userPermissionRepo,
 		ScheduleRepo:       scheduleRepo,
+		ConsultationRepo:   consultationRepo,
 	}
 }

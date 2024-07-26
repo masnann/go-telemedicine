@@ -9,7 +9,7 @@ type ScheduleModels struct {
 	IsAvailable bool   `json:"isAvailable"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
-	DeleteAt    string `json:"-"`
+	DeletedAt    string `json:"-"`
 }
 
 type ScheduleCreateRequest struct {
@@ -20,7 +20,7 @@ type ScheduleCreateRequest struct {
 	IsAvailable bool   `json:"isAvailable"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
-	DeleteAt    string `json:"-"`
+	DeletedAt    string `json:"-"`
 }
 
 type ScheduleFindListAvailableRequest struct {

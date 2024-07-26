@@ -30,6 +30,7 @@ func (s UserService) Register(req models.UserRegisterRequest) (int64, error) {
 		Username:  req.Username,
 		Email:     req.Email,
 		Password:  hash,
+		Type:      "Patient",
 		Status:    "active",
 		CreatedAt: helpers.TimeStampNow(),
 		UpdatedAt: "",
@@ -182,5 +183,43 @@ func (s UserService) FindListUsers(req models.FindListUserRequest) ([]models.Fin
 		log.Println("Error finding list users: ", err)
 		return nil, errors.New("failed to find list users")
 	}
+	return result, nil
+}
+
+func (s UserService) CreateUser(req models.UserCreateRequest) (int64, error) {
+
+	hash, err := s.service.Generator.GenerateHash(req.Password)
+	if err != nil {
+		log.Println("Error generating hash: ", err)
+		return 0, errors.New("failed to generate hash")
+	}
+
+	newData := models.UserModels{
+		Username:  req.Username,
+		Email:     req.Email,
+		Password:  hash,
+		Type:      req.Type,
+		Status:    "active",
+		CreatedAt: helpers.TimeStampNow(),
+		UpdatedAt: "",
+	}
+
+	result, err := s.service.UserRepo.Register(newData)
+	if err != nil {
+		log.Println("Error registering user: ", err)
+		return 0, errors.New("failed to register user")
+	}
+
+	// Assign Role
+	newRole := models.AssignRoleToUserRequest{
+		UserID: result,
+		RoleID: req.RoleID,
+	}
+
+	err = s.service.UserPermissionRepo.AssignRoleToUserRequest(newRole)
+	if err != nil {
+		return 0, err
+	}
+
 	return result, nil
 }

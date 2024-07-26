@@ -15,4 +15,16 @@ type UserPermissionRepositoryInterface interface {
 	AssignRoleToUserRequest(req models.AssignRoleToUserRequest) error
 	FindUserRole(userID int64) (models.FindUserRoleResponse, error)
 	FindUserPermissions(userID int64, permissionGroup, permissionName string) (models.UserPermissionModels, error)
+	CreateUserRolePermission(req models.RolePermissionModels) (int64, error)
+}
+
+type ScheduleRepositoryInterface interface {
+	CreateSchedule(req models.ScheduleModels) (int64, error)
+	FindListAvailableSchedule(req models.ScheduleFindListAvailableRequest) ([]models.ScheduleModels, error)
+	FindScheduleByID(id int64) (models.ScheduleModels, error)
+}
+
+type ConsultationRepositoryInterface interface {
+	CreateConsultation(req models.ConsultationModels) (int64, error)
+	FindListConsultationsUser(req models.ConsultationFindListByPatientIDRequest, userType string) ([]models.ConsultationModels, error)
 }

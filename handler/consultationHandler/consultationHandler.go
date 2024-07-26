@@ -40,5 +40,53 @@ func (h ConsultationHandler) CreateConsultation(ctx echo.Context) error {
 	}
 	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, consultationID)
 	return ctx.JSON(http.StatusOK, result)
+}
 
+func (h ConsultationHandler) FindListConsultationsByPatientID(ctx echo.Context) error {
+	var result models.Response
+
+	req := new(models.ConsultationFindListByPatientIDRequest)
+	req.PatientID = ctx.Get("user_id").(int64)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	consultations, err := h.handler.ConsultationService.FindListConsultationsByPatientID(*req)
+	if err != nil {
+		log.Printf("Error FindListConsultationsByPatientID: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	if len(consultations) == 0 {
+		result = helpers.ResponseJSON(false, constants.DATA_NOT_FOUND_CODE, "consultations not found", nil)
+		return ctx.JSON(http.StatusNotFound, result)
+	}
+
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, consultations)
+	return ctx.JSON(http.StatusOK, result)
+}
+
+func (h ConsultationHandler) FindListConsultationsByDoctorID(ctx echo.Context) error {
+	var result models.Response
+
+	req := new(models.ConsultationFindListByDoctorIDRequest)
+	req.DoctorID = ctx.Get("user_id").(int64)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	consultations, err := h.handler.ConsultationService.FindListConsultationsByDoctorID(*req)
+	if err != nil {
+		log.Printf("Error FindListConsultationsByDoctorID: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	if len(consultations) == 0 {
+		result = helpers.ResponseJSON(false, constants.DATA_NOT_FOUND_CODE, "consultations not found", nil)
+		return ctx.JSON(http.StatusNotFound, result)
+	}
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, consultations)
+	return ctx.JSON(http.StatusOK, result)
 }

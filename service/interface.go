@@ -27,4 +27,6 @@ type ScheduleServiceInterface interface {
 
 type ConsultationServiceInterface interface {
     CreateConsultation(req models.ConsultationCreateRequest) (int64, error)
+	FindListConsultationsByPatientID(req models.ConsultationFindListByPatientIDRequest) ([]models.ConsultationModels, error)
+	FindListConsultationsByDoctorID(req models.ConsultationFindListByDoctorIDRequest) ([]models.ConsultationModels, error)
 }

@@ -40,4 +40,6 @@ func ApiRoutes(e *echo.Echo, handler handler.Handler) {
 	consultationHandler := consultationhandler.NewConsultationHandler(handler)
 	consultationGroup := private.Group("/consultation")
 	consultationGroup.POST("/create", middleware.PermissionMiddleware(handler, "CONSULTATION", "CREATE")(consultationHandler.CreateConsultation))
+	consultationGroup.POST("/list/bypatientid", consultationHandler.FindListConsultationsByPatientID)
+	consultationGroup.POST("/list/bydoctorid", consultationHandler.FindListConsultationsByDoctorID)
 }

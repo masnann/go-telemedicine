@@ -62,3 +62,30 @@ func (s ConsultationService) CreateConsultation(req models.ConsultationCreateReq
 	}
 	return result, nil
 }
+
+func (s ConsultationService) FindListConsultationsByPatientID(req models.ConsultationFindListByPatientIDRequest) ([]models.ConsultationModels, error) {
+	result, err := s.service.ConsultationRepo.FindListConsultationsUser(req, "patient")
+	if err != nil {
+		log.Println("Error finding consultations by patient ID: ", err)
+		return nil, err
+	}
+	return result, nil
+
+}
+
+func (s ConsultationService) FindListConsultationsByDoctorID(req models.ConsultationFindListByDoctorIDRequest) ([]models.ConsultationModels, error) {
+	newData := models.ConsultationFindListByPatientIDRequest{
+		PatientID: req.DoctorID,
+		DateStart: req.DateStart,
+		DateEnd:   req.DateEnd,
+		Status:    req.Status,
+	}
+
+	result, err := s.service.ConsultationRepo.FindListConsultationsUser(newData, "doctor")
+	if err != nil {
+		log.Println("Error finding consultations by doctor ID: ", err)
+		return nil, err
+	}
+	return result, nil
+
+}

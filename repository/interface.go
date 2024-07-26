@@ -25,5 +25,6 @@ type ScheduleRepositoryInterface interface {
 }
 
 type ConsultationRepositoryInterface interface {
-    CreateConsultation(req models.ConsultationModels) (int64, error)
+	CreateConsultation(req models.ConsultationModels) (int64, error)
+	FindListConsultationsUser(req models.ConsultationFindListByPatientIDRequest, userType string) ([]models.ConsultationModels, error)
 }

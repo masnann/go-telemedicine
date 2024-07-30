@@ -5,7 +5,6 @@ type UserModels struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"-"`
-	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
@@ -15,7 +14,6 @@ type UserRegisterRequest struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
@@ -27,11 +25,11 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResponse struct {
-	UserID       int64                  `json:"userID"`
-	RoleName     string                 `json:"roleName"`
-	AccessToken  string                 `json:"accessToken"`
-	RefreshToken string                 `json:"refreshToken"`
-	Permission   []UserPermissionModels `json:"permission"`
+	UserID       int64                      `json:"userID"`
+	RoleName     string                     `json:"roleName"`
+	AccessToken  string                     `json:"accessToken"`
+	RefreshToken string                     `json:"refreshToken"`
+	Permission   []UserRolePermissionModels `json:"permission"`
 }
 
 type RefreshTokenRequest struct {
@@ -54,7 +52,6 @@ type FindListUserResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
 	Email     string `json:"email"`
-	Type      string `json:"type"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"createdAt"`
 }
@@ -63,9 +60,14 @@ type UserCreateRequest struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	Type      string `json:"type"`
 	Status    string `json:"status"`
 	RoleID    int64  `json:"roleID"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
+}
+
+type CurrentUserModels struct {
+	ID    int64  `json:"id"`
+	Role  string `json:"role"`
+	Email string `json:"email"`
 }

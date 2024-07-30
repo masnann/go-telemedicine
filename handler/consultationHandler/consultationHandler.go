@@ -24,8 +24,19 @@ func NewConsultationHandler(handler handler.Handler) ConsultationHandler {
 func (h ConsultationHandler) CreateConsultation(ctx echo.Context) error {
 	var result models.Response
 
+	currentUser, ok := ctx.Get("user").(models.CurrentUserModels)
+	if !ok {
+		result = helpers.ResponseJSON(false, constants.UNAUTHORIZED_CODE, "Failed to get user from context", nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+
+	if currentUser.Role != "Admin" && currentUser.Role != "Patient" {
+		result = helpers.ResponseJSON(false, constants.FORBIDDEN_CODE, "Access denied. You don't have permission", nil)
+		return ctx.JSON(http.StatusForbidden, result)
+	}
+
 	req := new(models.ConsultationCreateRequest)
-	req.PatientID = ctx.Get("user_id").(int64)
+	req.PatientID = currentUser.ID
 	if err := helpers.ValidateStruct(ctx, req); err != nil {
 		log.Printf("Error Failed to validate request: %v", err)
 		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)

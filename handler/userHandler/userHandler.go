@@ -154,17 +154,63 @@ func (h UserHandler) CreateUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, result)
 }
 
-func (h UserHandler) CreateUserRolePermission(ctx echo.Context) error {
+func (h UserHandler) CreatePermission(ctx echo.Context) error {
 	var result models.Response
-	req := new(models.UserRolePermissionCreateRequest)
+
+	_, err := helpers.ValidateUserAndRole(ctx, []string{"Admin"})
+	if err != nil {
+		log.Printf("Error Permission: %v", err)
+		result := helpers.ResponseJSON(false, constants.FORBIDDEN_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusForbidden, result)
+	}
+	req := new(models.PermissionCreateRequest)
 	if err := helpers.ValidateStruct(ctx, req); err != nil {
 		log.Printf("Error Failed to validate request: %v", err)
 		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
 		return ctx.JSON(http.StatusBadRequest, result)
 	}
-	permissionID, err := h.handler.UserPermissionService.CreateUserRolePermission(*req)
+	permissionID, err := h.handler.UserPermissionService.CreatePermission(*req)
 	if err != nil {
-		log.Printf("Error CreateUserRolePermission: %v", err)
+		log.Printf("Error CreatePermission: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, permissionID)
+	return ctx.JSON(http.StatusCreated, result)
+}
+
+func (h UserHandler) CreateRolePermission(ctx echo.Context) error {
+	var result models.Response
+
+	req := new(models.RolePermissionCreateRequest)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	permissionID, err := h.handler.UserPermissionService.CreateRolePermission(*req)
+	if err != nil {
+		log.Printf("Error CreateRolePermission: %v", err)
+		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusInternalServerError, result)
+	}
+	result = helpers.ResponseJSON(true, constants.SUCCESS_CODE, constants.EMPTY_VALUE, permissionID)
+	return ctx.JSON(http.StatusCreated, result)
+}
+
+func (s UserHandler) CreateUserPermission(ctx echo.Context) error {
+	var result models.Response
+
+	req := new(models.UserPermissionCreateRequest)
+	req.AdminID = ctx.Get("user_id").(int64)
+	if err := helpers.ValidateStruct(ctx, req); err != nil {
+		log.Printf("Error Failed to validate request: %v", err)
+		result = helpers.ResponseJSON(false, constants.VALIDATE_ERROR_CODE, err.Error(), nil)
+		return ctx.JSON(http.StatusBadRequest, result)
+	}
+	permissionID, err := s.handler.UserPermissionService.CreateUserPermission(*req)
+	if err != nil {
+		log.Printf("Error CreateUserPermission: %v", err)
 		result = helpers.ResponseJSON(false, constants.SYSTEM_ERROR_CODE, err.Error(), nil)
 		return ctx.JSON(http.StatusInternalServerError, result)
 	}

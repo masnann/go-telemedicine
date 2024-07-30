@@ -15,9 +15,12 @@ type UserServiceInterface interface {
 }
 
 type UserPermissionServiceInterface interface {
-	FindListUserPermissions(userID int64) ([]models.UserPermissionModels, error)
-	FindUserPermissions(userID int64, permissionGroup, permissionName string) (models.UserPermissionModels, error)
-	CreateUserRolePermission(req models.UserRolePermissionCreateRequest) (int64, error) 
+	FindListUserRolePermissions(userID int64) ([]models.UserRolePermissionModels, error)
+	CreatePermission(req models.PermissionCreateRequest) (int64, error)
+	CreateRolePermission(req models.RolePermissionCreateRequest) (int64, error)
+	CreateUserPermission(req models.UserPermissionCreateRequest) (int64, error)
+	UserHavePermission(userID int64, permissionGroup, permissionName string) (bool, error)
+	RoleHavePermission(userID int64, permissionGroup, permissionName string) (bool, error)
 }
 
 type ScheduleServiceInterface interface {
@@ -26,7 +29,7 @@ type ScheduleServiceInterface interface {
 }
 
 type ConsultationServiceInterface interface {
-    CreateConsultation(req models.ConsultationCreateRequest) (int64, error)
+	CreateConsultation(req models.ConsultationCreateRequest) (int64, error)
 	FindListConsultationsByPatientID(req models.ConsultationFindListByPatientIDRequest) ([]models.ConsultationModels, error)
 	FindListConsultationsByDoctorID(req models.ConsultationFindListByDoctorIDRequest) ([]models.ConsultationModels, error)
 }

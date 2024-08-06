@@ -32,7 +32,7 @@ func Test_CreateSchedule(t *testing.T) {
 	}
 
 	t.Run("Failure Case - Error Create Schedule", func(t *testing.T) {
-		expectedErr := errors.New("error creating schedule")
+		expectedErr := errors.New("error creating schedules")
 
 		ts.ScheduleRepo.On("CreateSchedule", newData).Return(int64(0), expectedErr).Once()
 

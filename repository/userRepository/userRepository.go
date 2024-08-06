@@ -23,12 +23,12 @@ func NewUserRepository(repo repository.Repository) UserRepository {
 func (r UserRepository) Register(req models.UserModels) (int64, error) {
 	var ID int64
 	query := `
-		INSERT INTO users (username, email, password, type, status, created_at, updated_at) 
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO users (username, email, password, status, created_at, updated_at) 
+		VALUES (?, ?, ?, ?, ?, ?)
 		RETURNING id`
 
 	query = helpers.ReplaceSQL(query, "?")
-	err := r.repo.DB.QueryRow(query, req.Username, req.Email, req.Password, req.Type, req.Status, req.CreatedAt, req.UpdatedAt).Scan(&ID)
+	err := r.repo.DB.QueryRow(query, req.Username, req.Email, req.Password, req.Status, req.CreatedAt, req.UpdatedAt).Scan(&ID)
 	if err != nil {
 		log.Println("Error querying register: ", err)
 		return ID, errors.New("error query")
@@ -40,11 +40,14 @@ func (r UserRepository) Register(req models.UserModels) (int64, error) {
 func (r UserRepository) FindUserByID(id int64) (models.UserModels, error) {
 	var user models.UserModels
 
-	query := `SELECT * FROM users WHERE id = ? and status = 'active'`
+	query := `
+		SELECT 
+			id, username, email, password, status, created_at, updated_at
+		FROM users WHERE id = ? and status = 'active'`
 
 	query = helpers.ReplaceSQL(query, "?")
 	row := r.repo.DB.QueryRow(query, id)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Type, &user.Status, &user.CreatedAt, &user.UpdatedAt)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Status, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, errors.New("user not found")
@@ -114,7 +117,6 @@ func (r UserRepository) FindListUser(req models.FindListUserRequest) ([]models.F
 		    id, 
             username, 
             email,
-			type, 
             status, 
             created_at
 		FROM 
@@ -142,7 +144,7 @@ func (r UserRepository) FindListUser(req models.FindListUserRequest) ([]models.F
 	defer rows.Close()
 	for rows.Next() {
 		var row models.FindListUserResponse
-		err := rows.Scan(&row.ID, &row.Username, &row.Email, &row.Type, &row.Status, &row.CreatedAt)
+		err := rows.Scan(&row.ID, &row.Username, &row.Email, &row.Status, &row.CreatedAt)
 		if err != nil {
 			log.Println("Error scanning row: ", err)
 			return user, errors.New("error scanning row")

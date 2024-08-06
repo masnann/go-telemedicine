@@ -30,7 +30,6 @@ func (s UserService) Register(req models.UserRegisterRequest) (int64, error) {
 		Username:  req.Username,
 		Email:     req.Email,
 		Password:  hash,
-		Type:      "Patient",
 		Status:    "active",
 		CreatedAt: helpers.TimeStampNow(),
 		UpdatedAt: "",
@@ -97,11 +96,12 @@ func (s UserService) Login(req models.UserLoginRequest) (models.UserLoginRespons
 		return models.UserLoginResponse{}, errors.New("failed to generate refresh token")
 	}
 
-	permissions, err := s.service.UserPermissionRepo.FindListUserPermissions(user.ID)
+	permissions, err := s.service.UserPermissionRepo.FindPermissionsForUser(user.ID)
 	if err != nil {
 		log.Println("Error finding user permissions: ", err)
 		return models.UserLoginResponse{}, errors.New("failed to find user permissions")
 	}
+
 	result := models.UserLoginResponse{
 		UserID:       user.ID,
 		RoleName:     role.RoleName,
@@ -145,7 +145,7 @@ func (s UserService) RefreshToken(accessToken string) (models.UserLoginResponse,
 		return models.UserLoginResponse{}, errors.New("failed to generate refresh token")
 	}
 
-	permissions, err := s.service.UserPermissionRepo.FindListUserPermissions(user.ID)
+	permissions, err := s.service.UserPermissionRepo.FindListUserRolePermissions(user.ID)
 	if err != nil {
 		log.Println("Error finding user permissions: ", err)
 		return models.UserLoginResponse{}, errors.New("failed to find user permissions")
@@ -198,7 +198,6 @@ func (s UserService) CreateUser(req models.UserCreateRequest) (int64, error) {
 		Username:  req.Username,
 		Email:     req.Email,
 		Password:  hash,
-		Type:      req.Type,
 		Status:    "active",
 		CreatedAt: helpers.TimeStampNow(),
 		UpdatedAt: "",

@@ -1,6 +1,7 @@
 package userrepository
 
 import (
+	"database/sql"
 	"errors"
 	"go-telemedicine/helpers"
 	"go-telemedicine/models"
@@ -18,27 +19,20 @@ func NewUserPermissionRepository(repo repository.Repository) UserPermissionRepos
 	}
 }
 
-func (r UserPermissionRepository) FindListUserPermissions(userID int64) ([]models.UserPermissionModels, error) {
-	var permissions []models.UserPermissionModels
+func (r UserPermissionRepository) FindListUserRolePermissions(userID int64) ([]models.UserRolePermissionModels, error) {
+	var permissions []models.UserRolePermissionModels
 	query := `
 		SELECT 
-			p.id AS permissions_id,
+			p.id,
 			p.groups AS permission_group,
 			p.name AS permission_name,
-			rp.status
+			up.status
 		FROM 
-			users u
+			user_permissions up
 		JOIN 
-			user_role ur ON u.id = ur.user_id
-		JOIN 
-			roles r ON ur.role_id = r.id
-		JOIN 
-			role_permissions rp ON r.id = rp.role_id
-		JOIN 
-			permissions p ON rp.permission_id = p.id
+			permissions p ON up.permission_id = p.id
 		WHERE 
-			u.id = ?
-
+			up.user_id = ?
     `
 	query = helpers.ReplaceSQL(query, "?")
 
@@ -49,13 +43,13 @@ func (r UserPermissionRepository) FindListUserPermissions(userID int64) ([]model
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var permission models.UserPermissionModels
-		err := rows.Scan(&permission.ID, &permission.Group, &permission.Name, &permission.Status)
+		var row models.UserRolePermissionModels
+		err := rows.Scan(&row.ID, &row.Group, &row.Name, &row.Status)
 		if err != nil {
 			log.Println("Error scanning row: ", err)
 			return permissions, errors.New("error scanning row")
 		}
-		permissions = append(permissions, permission)
+		permissions = append(permissions, row)
 	}
 	return permissions, nil
 }
@@ -111,61 +105,180 @@ func (r UserPermissionRepository) FindUserRole(userID int64) (models.FindUserRol
 	return userRole, nil
 }
 
-func (r UserPermissionRepository) FindUserPermissions(userID int64, permissionGroup, permissionName string) (models.UserPermissionModels, error) {
-	var permission models.UserPermissionModels
+func (r UserPermissionRepository) CreatePermission(req models.PermissionModels) (int64, error) {
+	var ID int64
+
 	query := `
-        SELECT 
-            p.id AS permissions_id,
-            p.groups AS permission_group,
-            p.name AS permission_name,
-            rp.status
-        FROM 
-            users u
-        JOIN 
-            user_role ur ON u.id = ur.user_id
-        JOIN 
-            roles r ON ur.role_id = r.id
-        JOIN 
-            role_permissions rp ON r.id = rp.role_id
-        JOIN 
-            permissions p ON rp.permission_id = p.id
-        WHERE 
-            u.id =? AND p.groups =? AND p.name =?
-    `
+        INSERT INTO permissions
+            (groups, name, created_at, updated_at)
+        VALUES (?,?, ?, ?)
+        RETURNING id`
 
 	query = helpers.ReplaceSQL(query, "?")
-
-	rows, err := r.repo.DB.Query(query, userID, permissionGroup, permissionName)
+	err := r.repo.DB.QueryRow(query, req.Group, req.Name, req.CreatedAt, req.UpdatedAt).Scan(&ID)
 	if err != nil {
-		log.Println("Error querying find user permission: ", err)
-		return permission, errors.New("error query")
+		log.Println("Error querying create permission: ", err)
+		return ID, errors.New("error query")
 	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&permission.ID, &permission.Group, &permission.Name, &permission.Status)
-		if err != nil {
-			log.Println("Error scanning row: ", err)
-			return permission, errors.New("error scanning row")
-		}
-	}
-	return permission, nil
+
+	return ID, nil
 }
 
-func (r UserPermissionRepository) CreateUserRolePermission(req models.RolePermissionModels) (int64, error) {
+func (r UserPermissionRepository) CreateRolePermission(req models.RolePermissionModels) (int64, error) {
 	var ID int64
 
 	query := `
 		INSERT INTO role_permissions
-			(role_id, permission_id, status)
-		VALUES (?,?,?)
+			(role_id, permission_id, created_at, updated_at)
+		VALUES (?, ?, ?, ?)
 		RETURNING id`
-	
-	query = helpers.ReplaceSQL(query, "?")
-	err := r.repo.DB.QueryRow(query, req.RoleID, req.PermissionID, req.Status).Scan(&ID)
-	if err!= nil {
-        log.Println("Error querying create permission: ", err)
-        return ID, errors.New("error query")
-    }
 
-    return ID, nil
+	query = helpers.ReplaceSQL(query, "?")
+	err := r.repo.DB.QueryRow(query, req.RoleID, req.PermissionID, req.CreatedAt, req.UpdatedAt).Scan(&ID)
+	if err != nil {
+		log.Println("Error querying create permission: ", err)
+		return ID, errors.New("error query")
+	}
+
+	return ID, nil
+}
+
+func (r UserPermissionRepository) CreateUserPermission(req models.UserPermissionModels) (int64, error) {
+	var ID int64
+	query := `
+		INSERT INTO user_permissions
+		    (user_id, permission_id, status, granted_by, granted_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
+		RETURNING id`
+
+	query = helpers.ReplaceSQL(query, "?")
+	err := r.repo.DB.QueryRow(query, req.UserID, req.PermissionID, req.Status, req.GrantedBy, req.GrantedAt, req.UpdatedAt).Scan(&ID)
+	if err != nil {
+		log.Println("Error querying create permission: ", err)
+		return ID, errors.New("error query")
+	}
+	return ID, nil
+}
+
+func (r UserPermissionRepository) UserHavePermission(userID int64, permissionGroup, permissionName string) (bool, error) {
+	var permission models.UserRolePermissionModels
+	query := `
+        SELECT 
+			p.id, 
+			p.groups AS permission_group, 
+			p.name AS permission_name, 
+			up.status AS permission_status
+        FROM 
+			user_permissions up
+        JOIN 
+			permissions p ON up.permission_id = p.id
+        WHERE 
+			up.user_id = ? AND p.groups = ? AND p.name = ? AND up.status = 'true'
+    `
+	query = helpers.ReplaceSQL(query, "?")
+	row := r.repo.DB.QueryRow(query, userID, permissionGroup, permissionName)
+	err := row.Scan(&permission.ID, &permission.Group, &permission.Name, &permission.Status)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (r UserPermissionRepository) RoleHavePermission(userID int64, permissionGroup, permissionName string) (bool, error) {
+	query := `
+        SELECT 
+            COUNT(*) > 0
+        FROM 
+            user_role ur
+        JOIN 
+            role_permissions rp ON ur.role_id = rp.role_id
+        JOIN 
+            permissions p ON rp.permission_id = p.id
+        WHERE 
+            ur.user_id = ? AND p.groups = ? AND p.name = ?
+    `
+
+	query = helpers.ReplaceSQL(query, "?")
+
+	var hasPermission bool
+	err := r.repo.DB.QueryRow(query, userID, permissionGroup, permissionName).Scan(&hasPermission)
+	if err != nil {
+		log.Println("Error querying role permissions: ", err)
+		return false, err
+	}
+
+	return hasPermission, nil
+}
+
+func (r UserPermissionRepository) FindPermissionsForUser(userID int64) ([]models.UserRolePermissionModels, error) {
+	permissionsMap := make(map[string]models.UserRolePermissionModels)
+
+	rolePermissionsQuery := `
+    SELECT
+		p.id,
+		p.groups, 
+		p.name, 
+		rp.status 
+    FROM 
+		role_permissions rp
+    JOIN 
+		permissions p ON rp.permission_id = p.id
+    JOIN 
+		user_role ur ON ur.role_id = rp.role_id
+    WHERE 
+		ur.user_id = $1`
+
+	roleRows, err := r.repo.DB.Query(rolePermissionsQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer roleRows.Close()
+
+	for roleRows.Next() {
+		var row models.UserRolePermissionModels
+		if err := roleRows.Scan(&row.ID, &row.Group, &row.Name, &row.Status); err != nil {
+			return nil, err
+		}
+		key := row.Group + "_" + row.Name
+		permissionsMap[key] = row
+	}
+
+	// Get user-specific permissions
+	userPermissionsQuery := `
+    SELECT 
+		p.id, 
+		p.groups, 
+		p.name, 
+		up.status 
+    FROM 
+		user_permissions up
+    JOIN 
+		permissions p ON up.permission_id = p.id
+    WHERE 
+		up.user_id = $1`
+
+	userRows, err := r.repo.DB.Query(userPermissionsQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer userRows.Close()
+
+	for userRows.Next() {
+		var row models.UserRolePermissionModels
+		if err := userRows.Scan(&row.ID, &row.Group, &row.Name, &row.Status); err != nil {
+			return nil, err
+		}
+		key := row.Group + "_" + row.Name
+		permissionsMap[key] = row 
+	}
+
+	var permissions []models.UserRolePermissionModels
+	for _, permission := range permissionsMap {
+		permissions = append(permissions, permission)
+	}
+
+	return permissions, nil
 }

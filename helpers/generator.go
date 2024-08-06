@@ -73,11 +73,11 @@ func (g Generator) ComparePassword(hash, password string) (bool, error) {
 
 func (g Generator) GenerateJWT(userID int64, email, role string) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"email":   email,
-		"role":    role,
-		"iat":     time.Now().Unix(),
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"userID": userID,
+		"email":  email,
+		"role":   role,
+		"iat":    time.Now().Unix(),
+		"exp":    time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -1,0 +1,31 @@
+name: Run Tests with Coverage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.22.3'  
+
+    - name: Create .env file for scheduleService
+      run: |
+          touch service/consultationService/.env
+          touch service/scheduleService/.env
+          touch service/userService/.env
+
+    - name: Run tests for scheduleService
+      run: |
+        cd service/
+        go test ./... -coverprofile=coverage.out
+        go tool cover -func=coverage.out

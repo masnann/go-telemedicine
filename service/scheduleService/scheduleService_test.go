@@ -73,7 +73,7 @@ func Test_FindByID(t *testing.T) {
 	})
 
 	t.Run("Failure Case - Find By ID", func(t *testing.T) {
-		expectedErr := errors.New("schedule not founds")
+		expectedErr := errors.New("schedule not found")
 
 		ts.ScheduleRepo.On("FindScheduleByID", req.ID).Return(models.ScheduleModels{}, expectedErr).Once()
 

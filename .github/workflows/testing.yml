@@ -3,7 +3,7 @@ name: Run Tests with Coverage
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   test:
@@ -18,14 +18,17 @@ jobs:
       with:
         go-version: '1.22.3'  
 
-    - name: Create .env file for scheduleService
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Create .env file 
       run: |
           touch service/consultationService/.env
           touch service/scheduleService/.env
           touch service/userService/.env
 
-    - name: Run tests for scheduleService
-      run: |
-        cd service/
-        go test ./... -coverprofile=coverage.out
-        go tool cover -func=coverage.out
+    - name: Run service tests
+      run: go test -coverprofile=coverage.out ./service/...
+      
+    - name: Display coverage
+      run: go tool cover -func=coverage.out

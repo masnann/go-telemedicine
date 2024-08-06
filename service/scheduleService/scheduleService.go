@@ -1,6 +1,7 @@
 package scheduleservice
 
 import (
+	"errors"
 	"go-telemedicine/helpers"
 	"go-telemedicine/models"
 	"go-telemedicine/service"
@@ -42,5 +43,13 @@ func (s ScheduleService) FindListAvailableSchedule(req models.ScheduleFindListAv
 		return nil, err
 	}
 	return result, nil
+}
 
+func (s ScheduleService) FindByID(req models.RequestID) (models.ScheduleModels, error) {
+	result, err := s.service.ScheduleRepo.FindScheduleByID(req.ID)
+	if err != nil {
+		log.Println("Error finding schedule by ID: ", err)
+		return result, errors.New("schedule not found")
+	}
+	return result, nil
 }
